@@ -11,11 +11,13 @@ pipeline {
                 sh 'npm install' 
             }
         }
+        stage('Build image') {
+            app = docker.build("getintodevops/hellonode")
+        }
         stage('Push image') {
-            steps {
-                sh './jenkins/scripts/deliver-for-development.sh'
-                input message: 'Finished using the web site? (Click "Proceed" to continue)'
-                sh './jenkins/scripts/kill.sh'
+            docker.withRegistry('https://registry.hub.docker.com', 'docker-hub-credentials') {
+                app.push("${env.BUILD_NUMBER}")
+                app.push("latest")
             }
         }
     }
